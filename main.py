@@ -83,5 +83,5 @@ def menu():
 
 if __name__  == "__main__":
     attack = menu()
-    attack.hsrp_hack()
+    attack.show()
     
