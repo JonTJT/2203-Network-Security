@@ -115,6 +115,7 @@ def menu():
         vIP = input("HSRP Virtual IP (192.168.1.254): ")
         verbose = input("Verbose? (1): ")
         gwIP = input("Gateway IP: ")
+        
         if(srcIP == ""):
             srcIP = get_if_addr(iface)
         if(srcHW == ""):
