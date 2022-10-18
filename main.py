@@ -84,7 +84,6 @@ def choose_inter():
             int_choice  = input()
             int_choice = convert_to_int(int_choice)
             if(no_of_int >= int_choice and int_choice > 0):
-                print("test")
                 iface_choice = interfaces[int_choice-1]
                 return iface_choice
         else:
@@ -126,7 +125,7 @@ def menu():
         if(gwIP == ""):
             gwIP = gatewayIP
 
-        print(f"Options: \niface = {iface} \nsrcIP = {srcIP} \nsrcHW  {srcHW} \nroup = {group} \npriority = {priority} \nvIP = {vIP} \nVerbose = {verbose}\n gwIP = {gwIP}")
+        print(f"Options: \niface = {iface} \nsrcIP = {srcIP} \nsrcHW  {srcHW} \ngroup = {group} \npriority = {priority} \nvIP = {vIP} \nVerbose = {verbose}\n gwIP = {gwIP}")
         confirm = input("Confirm? ==> (1) ")
         if(convert_to_int(confirm) == 1 or confirm == ""):
             return Attack(att_choice,iface,srcIP,srcHW,group,priority,vIP,verbose, gwIP)
